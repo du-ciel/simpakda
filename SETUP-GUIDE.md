@@ -14,11 +14,7 @@
    - Installasi: Typical → Next → Finish
    - Catat password root MySQL
 
-3. **HeidiSQL** (Tool Database) - Optional
-   - Download: https://www.heidisql.com/download.php
-   - Untuk import database (lebih mudah)
-
-4. **Git** (Untuk clone project)
+3. **Git** (Untuk clone project)
    - Download: https://git-scm.com/download/win
 
 ---
@@ -49,28 +45,18 @@ Script akan otomatis:
 
 ### 4. Setup Database
 
-#### Pakai HeidiSQL (Recommended):
-1. Buka **HeidiSQL**
-2. Klik **"New"** → isi:
+Buka **HeidiSQL**:
+1. Klik **"New"** → isi:
    - Host: `127.0.0.1`
    - User: `root`
    - Password: *(password MySQL yang sudah dibuat saat install)*
-3. Klik **"Open"**
-4. Klik kanan → **"Create new"** → **"Database"**
-5. Nama: `simpakda`
-6. Klik database `simpakda`
-7. Menu: **File** → **"Run SQL file..."**
-8. Pilih file `database/simpakda.sql`
-9. Tunggu sampai selesai
-
-#### Pakai Command Line:
-```bash
-mysql -u root -p
-CREATE DATABASE simpakda;
-EXIT;
-
-mysql -u root -p simpakda < database/simpakda.sql
-```
+2. Klik **"Open"**
+3. Klik kanan → **"Create new"** → **"Database"**
+4. Nama: `simpakda`
+5. Klik database `simpakda`
+6. Menu: **File** → **"Run SQL file..."**
+7. Pilih file `database/simpakda.sql`
+8. Tunggu sampai selesai
 
 ### 5. Update File .env
 
@@ -89,26 +75,42 @@ DB_USERNAME=root
 DB_PASSWORD=  <-- isi password MySQL kamu
 ```
 
-### 6. Jalankan Aplikasi
+### 6. Buat Admin User
+
+**Penting:** Registration sudah dinonaktifkan. Hanya admin yang sudah dibuat yang bisa login.
+
+Buka terminal di folder project, ketik:
+
+```bash
+php artisan admin:create admin@perusahaan.com "Nama Admin"
+```
+
+Contoh:
+```bash
+php artisan admin:create admin@simpakda.id "Budi Santoso"
+```
+
+Akan muncul password yang digenerate otomatis. **Simpan password ini!**
+
+### 7. Jalankan Aplikasi
 
 1. Buka **Herd**
 2. Project akan otomatis terdeteksi
 3. Klik untuk membuka di browser
+4. Login dengan email dan password admin
 
 ---
 
-## Struktur Folder
+## Mengelola Admin
 
+### Lihat daftar admin:
+```bash
+php artisan admin:list
 ```
-simpakda/
-├── app/              # Kode aplikasi
-├── database/
-│   └── simpakda.sql  # File database untuk di-import
-├── public/           # Folder publik
-├── resources/        # View & assets
-├── setup.bat        # Script setup otomatis
-├── .env             # Environment (setelah setup)
-└── README.md        # Panduan ini
+
+### Reset password admin:
+```bash
+php artisan admin:reset admin@email.com
 ```
 
 ---
@@ -133,6 +135,38 @@ simpakda/
   ```bash
   npm run build
   ```
+
+### Error: "These credentials do not match our records"
+- Pastikan email dan password admin benar
+- Cek apakah email sudah dibuat dengan `admin:create`
+
+---
+
+## Keamanan
+
+- Registration dinonaktifkan — hanya admin yang bisa login
+- Password admin di-generate secara acak saat pembuatan
+- Simpan password di tempat yang aman
+- Jangan share credentials ke orang yang tidak berwenang
+
+---
+
+## Struktur Folder
+
+```
+simpakda/
+├── app/
+│   └── Console/
+│       └── Commands/
+│           └── CreateAdmin.php   # Command buat admin
+├── database/
+│   └── simpakda.sql             # File database untuk di-import
+├── public/                      # Folder publik
+├── resources/                  # View & assets
+├── setup.bat                   # Script setup otomatis
+├── .env                        # Environment (setelah setup)
+└── SETUP-GUIDE.md             # Panduan ini
+```
 
 ---
 
