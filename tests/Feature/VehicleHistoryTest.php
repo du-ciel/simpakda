@@ -21,8 +21,8 @@ function vehicleHistoryPayload(array $overrides = []): array
         'keterangan_kendaraan' => null,
         'anggaran_biaya' => 0,
         'biaya_plat_stnk' => 0,
-        'sumber_dana' => 'APBD',
-        'kategori' => 'Roda 4',
+        'sumber_kendaraan' => 'APBD',
+        'kategori' => 'roda_4',
         'sub_kategori' => null,
         'status' => 'aktif',
     ], $overrides);

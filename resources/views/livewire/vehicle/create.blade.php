@@ -56,7 +56,7 @@
             <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-3">
                 <flux:input label="Anggaran Biaya" wire:model="anggaran_biaya" type="number" step="1000" min="0" placeholder="0" />
                 <flux:input label="Biaya Plat/STNK" wire:model="biaya_plat_stnk" type="number" step="1000" min="0" placeholder="0" />
-                <flux:input label="Sumber Dana" wire:model="sumber_dana" placeholder="Contoh: APD, BLUD" required />
+                <flux:input label="Sumber Kendaraan" wire:model="sumber_kendaraan" placeholder="Contoh: APD, BLUD" required />
             </div>
         </div>
 

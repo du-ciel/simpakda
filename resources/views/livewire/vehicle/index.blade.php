@@ -65,7 +65,7 @@
                         </td>
                         <td class="px-4 py-3 text-sm">
                             @if ($vehicle->isPajakExpired())
-                                <flux:badge color="red">Expired</flux:badge>
+                                <flux:badge color="red">Belum Bayar</flux:badge>
                             @elseif ($vehicle->isPajakExpiringSoon())
                                 <flux:badge color="yellow">{{ $vehicle->masa_berlaku_pajak->format('d/m/Y') }}</flux:badge>
                             @else
@@ -74,7 +74,7 @@
                         </td>
                         <td class="px-4 py-3 text-sm">
                             @if ($vehicle->isStnkExpired())
-                                <flux:badge color="red">Expired</flux:badge>
+                                <flux:badge color="red">Belum Bayar</flux:badge>
                             @else
                                 <span class="text-xs">{{ $vehicle->masa_berlaku_stnk->format('d/m/Y') }}</span>
                             @endif

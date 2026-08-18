@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VehiclesExport
 {
@@ -26,36 +27,36 @@ class VehiclesExport
         return $this;
     }
 
-    public function downloadXlsx(): void
+    public function downloadXlsx(): StreamedResponse
     {
-        $spreadsheet = $this->buildSpreadsheet();
-        $writer = new Xlsx($spreadsheet);
         $filename = 'data-kendaraan-'.date('Y-m-d-His').'.xlsx';
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$filename.'"');
-        header('Cache-Control: max-age=0');
+        return response()->streamDownload(function (): void {
+            $spreadsheet = $this->buildSpreadsheet();
 
-        $writer->save('php://output');
-        exit;
+            (new Xlsx($spreadsheet))->save('php://output');
+            $spreadsheet->disconnectWorksheets();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
-    public function downloadCsv(): void
+    public function downloadCsv(): StreamedResponse
     {
-        $spreadsheet = $this->buildSpreadsheet();
-        $writer = new Csv($spreadsheet);
-        $writer->setDelimiter(',');
-        $writer->setEnclosure('"');
-        $writer->setLineEnding("\r\n");
-        $writer->setUseBOM(true);
         $filename = 'data-kendaraan-'.date('Y-m-d-His').'.csv';
 
-        header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment;filename="'.$filename.'"');
-        header('Cache-Control: max-age=0');
-
-        $writer->save('php://output');
-        exit;
+        return response()->streamDownload(function (): void {
+            $spreadsheet = $this->buildSpreadsheet();
+            $writer = new Csv($spreadsheet);
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setLineEnding("\r\n");
+            $writer->setUseBOM(true);
+            $writer->save('php://output');
+            $spreadsheet->disconnectWorksheets();
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     protected function buildSpreadsheet(): Spreadsheet
@@ -80,7 +81,7 @@ class VehiclesExport
             'Status Kendaraan',
             'No Chasis',
             'No Mesin',
-            'Sumber Dana',
+            'Sumber Kendaraan',
             'Anggaran Biaya',
             'Biaya Plat/STNK',
             'Keterangan Pajak',
@@ -133,7 +134,7 @@ class VehiclesExport
                 ucfirst(str_replace('_', ' ', $v->status)),
                 $v->nomor_chasis,
                 $v->nomor_mesin,
-                $v->sumber_dana,
+                $v->sumber_kendaraan,
                 $v->anggaran_biaya,
                 $v->biaya_plat_stnk,
                 $v->keterangan_pajak ?? '',
@@ -143,7 +144,7 @@ class VehiclesExport
             $colIndex = 1;
             foreach ($data as $value) {
                 $cell = $sheet->getCell(Coordinate::stringFromColumnIndex($colIndex).$row);
-                $cell->setValue($value);
+                $cell->setValue($this->spreadsheetValue($value));
 
                 $cell->getStyle()->applyFromArray([
                     'borders' => [
@@ -179,5 +180,14 @@ class VehiclesExport
         $sheet->freezePane('A2');
 
         return $spreadsheet;
+    }
+
+    private function spreadsheetValue(mixed $value): mixed
+    {
+        if (is_string($value) && preg_match('/^[=+\-@]/', $value) === 1) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 }

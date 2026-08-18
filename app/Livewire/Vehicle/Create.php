@@ -39,7 +39,7 @@ class Create extends Component
 
     public string $biaya_plat_stnk = '';
 
-    public string $sumber_dana = '';
+    public string $sumber_kendaraan = '';
 
     public string $kategori = '';
 
@@ -65,7 +65,7 @@ class Create extends Component
             'keterangan_kendaraan' => 'nullable|string',
             'anggaran_biaya' => 'nullable|numeric|min:0',
             'biaya_plat_stnk' => 'nullable|numeric|min:0',
-            'sumber_dana' => 'required|string|max:100',
+            'sumber_kendaraan' => 'required|string|max:100',
             'kategori' => 'required|string|max:50',
             'sub_kategori' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,non_aktif,perbaikan,dijual',
@@ -97,7 +97,7 @@ class Create extends Component
         $this->keterangan_kendaraan = $this->vehicle->keterangan_kendaraan ?? '';
         $this->anggaran_biaya = (string) $this->vehicle->anggaran_biaya;
         $this->biaya_plat_stnk = (string) $this->vehicle->biaya_plat_stnk;
-        $this->sumber_dana = $this->vehicle->sumber_dana;
+        $this->sumber_kendaraan = $this->vehicle->sumber_kendaraan;
         $this->kategori = $this->vehicle->kategori;
         $this->sub_kategori = $this->vehicle->sub_kategori ?? '';
         $this->status = $this->vehicle->status;
@@ -107,29 +107,35 @@ class Create extends Component
     {
         $this->validate($this->rules());
 
+        $data = [
+            'merek' => $this->merek,
+            'tipe' => $this->tipe,
+            'jenis' => $this->jenis,
+            'nomor_polisi' => $this->nomor_polisi,
+            'nomor_chasis' => $this->nomor_chasis,
+            'nomor_mesin' => $this->nomor_mesin,
+            'tahun_pemakaian' => (int) $this->tahun_pemakaian,
+            'masa_berlaku_pajak' => $this->masa_berlaku_pajak,
+            'masa_berlaku_stnk' => $this->masa_berlaku_stnk,
+            'nama_pemakai' => $this->nama_pemakai,
+            'jabatan_pemakai' => $this->jabatan_pemakai,
+            'keterangan_pajak' => $this->keterangan_pajak ?: null,
+            'keterangan_kendaraan' => $this->keterangan_kendaraan ?: null,
+            'anggaran_biaya' => $this->anggaran_biaya ? (float) $this->anggaran_biaya : 0,
+            'biaya_plat_stnk' => $this->biaya_plat_stnk ? (float) $this->biaya_plat_stnk : 0,
+            'sumber_kendaraan' => $this->sumber_kendaraan,
+            'kategori' => $this->kategori,
+            'sub_kategori' => $this->sub_kategori ?: null,
+            'status' => $this->status,
+        ];
+
+        if ($this->vehicle && $this->vehicle->masa_berlaku_pajak?->format('Y-m-d') !== $this->masa_berlaku_pajak) {
+            $data['pajak_dibayar_at'] = null;
+        }
+
         Vehicle::updateOrCreate(
             ['id' => $this->vehicle?->id],
-            [
-                'merek' => $this->merek,
-                'tipe' => $this->tipe,
-                'jenis' => $this->jenis,
-                'nomor_polisi' => $this->nomor_polisi,
-                'nomor_chasis' => $this->nomor_chasis,
-                'nomor_mesin' => $this->nomor_mesin,
-                'tahun_pemakaian' => (int) $this->tahun_pemakaian,
-                'masa_berlaku_pajak' => $this->masa_berlaku_pajak,
-                'masa_berlaku_stnk' => $this->masa_berlaku_stnk,
-                'nama_pemakai' => $this->nama_pemakai,
-                'jabatan_pemakai' => $this->jabatan_pemakai,
-                'keterangan_pajak' => $this->keterangan_pajak ?: null,
-                'keterangan_kendaraan' => $this->keterangan_kendaraan ?: null,
-                'anggaran_biaya' => $this->anggaran_biaya ? (float) $this->anggaran_biaya : 0,
-                'biaya_plat_stnk' => $this->biaya_plat_stnk ? (float) $this->biaya_plat_stnk : 0,
-                'sumber_dana' => $this->sumber_dana,
-                'kategori' => $this->kategori,
-                'sub_kategori' => $this->sub_kategori ?: null,
-                'status' => $this->status,
-            ]
+            $data
         );
 
         session()->flash('message', $this->vehicle ? 'Kendaraan berhasil diupdate.' : 'Kendaraan berhasil ditambahkan.');

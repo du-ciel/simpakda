@@ -19,6 +19,7 @@ class Vehicle extends Model
         'nomor_mesin',
         'tahun_pemakaian',
         'masa_berlaku_pajak',
+        'pajak_dibayar_at',
         'masa_berlaku_stnk',
         'nama_pemakai',
         'jabatan_pemakai',
@@ -26,7 +27,7 @@ class Vehicle extends Model
         'keterangan_kendaraan',
         'anggaran_biaya',
         'biaya_plat_stnk',
-        'sumber_dana',
+        'sumber_kendaraan',
         'kategori',
         'sub_kategori',
         'status',
@@ -34,6 +35,7 @@ class Vehicle extends Model
 
     protected $casts = [
         'masa_berlaku_pajak' => 'date',
+        'pajak_dibayar_at' => 'datetime',
         'masa_berlaku_stnk' => 'date',
         'tahun_pemakaian' => 'integer',
         'anggaran_biaya' => 'decimal:0',
@@ -42,6 +44,12 @@ class Vehicle extends Model
 
     protected static function booted(): void
     {
+        static::saving(function (Vehicle $vehicle): void {
+            if ($vehicle->exists && $vehicle->isDirty('masa_berlaku_pajak') && ! $vehicle->isDirty('pajak_dibayar_at')) {
+                $vehicle->pajak_dibayar_at = null;
+            }
+        });
+
         static::created(function (Vehicle $vehicle): void {
             $vehicle->recordHistory('created', $vehicle->getAttributes());
         });
@@ -104,16 +112,16 @@ class Vehicle extends Model
 
     public function isPajakExpired(): bool
     {
-        return $this->masa_berlaku_pajak->isPast();
+        return $this->masa_berlaku_pajak->isBefore(today());
     }
 
     public function isStnkExpired(): bool
     {
-        return $this->masa_berlaku_stnk->isPast();
+        return $this->masa_berlaku_stnk->isBefore(today());
     }
 
-    public function isPajakExpiringSoon(int $days = 30): bool
+    public function isPajakExpiringSoon(int $days = 21): bool
     {
-        return $this->masa_berlaku_pajak->between(now(), now()->addDays($days));
+        return $this->masa_berlaku_pajak->betweenIncluded(today(), today()->addDays($days));
     }
 }

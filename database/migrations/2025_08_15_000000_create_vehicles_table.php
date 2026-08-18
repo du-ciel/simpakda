@@ -35,7 +35,7 @@ return new class extends Migration
             // Biaya
             $table->decimal('anggaran_biaya', 15, 0)->default(0);
             $table->decimal('biaya_plat_stnk', 15, 0)->default(0);
-            $table->string('sumber_dana', 100);
+            $table->string('sumber_kendaraan', 100);
 
             // Kategori
             $table->string('kategori', 50);

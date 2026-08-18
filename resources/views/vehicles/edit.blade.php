@@ -50,7 +50,11 @@
                     <flux:heading size="sm" class="text-sky-900 dark:text-sky-100">Kategori</flux:heading>
                 </div>
                 <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
-                    <flux:input label="Kategori *" name="kategori" :value="old('kategori', $vehicle->kategori)" required />
+                    <flux:select label="Kategori *" name="kategori" required>
+                        <flux:select.option value="">Pilih Kategori</flux:select.option>
+                        <flux:select.option value="roda_2" :selected="$vehicle->kategori == 'roda_2'">Roda 2</flux:select.option>
+                        <flux:select.option value="roda_4" :selected="$vehicle->kategori == 'roda_4'">Roda 4</flux:select.option>
+                    </flux:select>
                     <flux:input label="Sub Kategori" name="sub_kategori" :value="old('sub_kategori', $vehicle->sub_kategori)" />
                 </div>
             </div>
@@ -62,7 +66,7 @@
                 <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-3">
                     <flux:input label="Anggaran Biaya" name="anggaran_biaya" :value="old('anggaran_biaya', $vehicle->anggaran_biaya)" type="number" step="1000" min="0" />
                     <flux:input label="Biaya Plat/STNK" name="biaya_plat_stnk" :value="old('biaya_plat_stnk', $vehicle->biaya_plat_stnk)" type="number" step="1000" min="0" />
-                    <flux:input label="Sumber Dana *" name="sumber_dana" :value="old('sumber_dana', $vehicle->sumber_dana)" required />
+                    <flux:input label="Sumber Kendaraan *" name="sumber_kendaraan" :value="old('sumber_kendaraan', $vehicle->sumber_kendaraan)" required />
                 </div>
             </div>
 

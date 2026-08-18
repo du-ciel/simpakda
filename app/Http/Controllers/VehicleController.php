@@ -59,7 +59,7 @@ class VehicleController extends Controller
             'keterangan_kendaraan' => 'nullable|string',
             'anggaran_biaya' => 'nullable|numeric|min:0',
             'biaya_plat_stnk' => 'nullable|numeric|min:0',
-            'sumber_dana' => 'required|string|max:100',
+            'sumber_kendaraan' => 'required|string|max:100',
             'kategori' => 'required|string|max:50',
             'sub_kategori' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,non_aktif,perbaikan,dijual',
@@ -103,7 +103,7 @@ class VehicleController extends Controller
             'keterangan_kendaraan' => 'nullable|string',
             'anggaran_biaya' => 'nullable|numeric|min:0',
             'biaya_plat_stnk' => 'nullable|numeric|min:0',
-            'sumber_dana' => 'required|string|max:100',
+            'sumber_kendaraan' => 'required|string|max:100',
             'kategori' => 'required|string|max:50',
             'sub_kategori' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,non_aktif,perbaikan,dijual',
@@ -111,6 +111,10 @@ class VehicleController extends Controller
 
         $validated['anggaran_biaya'] = $validated['anggaran_biaya'] ?? 0;
         $validated['biaya_plat_stnk'] = $validated['biaya_plat_stnk'] ?? 0;
+
+        if ($vehicle->masa_berlaku_pajak?->format('Y-m-d') !== $validated['masa_berlaku_pajak']) {
+            $validated['pajak_dibayar_at'] = null;
+        }
 
         $vehicle->update($validated);
 
@@ -122,6 +126,29 @@ class VehicleController extends Controller
         $vehicle->delete();
 
         return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil dihapus.');
+    }
+
+    public function markTaxPaid(Vehicle $vehicle)
+    {
+        if ($vehicle->masa_berlaku_pajak->year > now()->year) {
+            return redirect()->route('monitoring')->with(
+                'success',
+                'Pajak kendaraan '.$vehicle->nomor_polisi.' sudah dijadwalkan sampai '.$vehicle->masa_berlaku_pajak->format('d/m/Y').'.'
+            );
+        }
+
+        $nextTaxDueDate = $vehicle->masa_berlaku_pajak->copy()->addYearNoOverflow();
+
+        $vehicle->update([
+            // Pembayaran pajak selalu memperpanjang jatuh tempo satu tahun.
+            'masa_berlaku_pajak' => $nextTaxDueDate,
+            'pajak_dibayar_at' => now(),
+        ]);
+
+        return redirect()->route('monitoring')->with(
+            'success',
+            'Pajak kendaraan '.$vehicle->nomor_polisi.' sudah dibayar. Pengingat berikutnya: '.$nextTaxDueDate->format('d/m/Y').'.'
+        );
     }
 
     public function export(Request $request)

@@ -17,74 +17,66 @@
             </div>
         </div>
 
-        @php
-            $totalVehicle = \App\Models\Vehicle::count();
-            $activeVehicles = \App\Models\Vehicle::where('status', 'aktif')->count();
-            $expiredTax = \App\Models\Vehicle::where('masa_berlaku_pajak', '<', now())->count();
-            $expiredStnk = \App\Models\Vehicle::where('masa_berlaku_stnk', '<', now())->count();
-            $expiringSoon = \App\Models\Vehicle::whereBetween(
-                'masa_berlaku_pajak',
-                [now(), now()->addDays(30)]
-            )->get();
-            $inactive = \App\Models\Vehicle::whereIn('status', ['non_aktif', 'perbaikan', 'dijual'])->get();
-        @endphp
-
-        {{-- Reminder - Kendaraan Perlu Dibayar Tahun Ini --}}
-        @php
-            $reminderYear = now()->year;
-            $vehiclesNeedPayment = \App\Models\Vehicle::whereYear('masa_berlaku_pajak', $reminderYear)
-                ->orWhere(function ($q) use ($reminderYear) {
-                    $q->whereYear('masa_berlaku_pajak', '<', $reminderYear)
-                      ->where('status', 'aktif');
-                })
-                ->orderBy('masa_berlaku_pajak')
-                ->get();
-            $reminderCount = $vehiclesNeedPayment->count();
-        @endphp
-
-        @if ($reminderCount > 0)
-            <div class="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm dark:border-amber-900/50 dark:from-amber-950/40 dark:to-orange-950/40">
-                <div class="flex items-center justify-between border-b border-amber-200 px-5 py-4 dark:border-amber-900/50">
-                    <div class="flex items-center gap-3">
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60">
-                            <flux:icon name="exclamation-circle" class="size-5 text-amber-600 dark:text-amber-300" />
-                        </div>
-                        <div>
-                            <flux:heading size="sm" class="text-amber-900 dark:text-amber-100">
-                                Reminder Pembayaran Pajak
-                            </flux:heading>
-                            <flux:text size="sm" class="text-amber-700 dark:text-amber-300">
-                                {{ $reminderCount }} kendaraan perlu perhatian pada tahun {{ $reminderYear }}
-                            </flux:text>
-                        </div>
-                    </div>
-                    <flux:badge color="amber">{{ $reminderCount }}</flux:badge>
-                </div>
-
-                <div class="max-h-60 overflow-y-auto px-5">
-                    @foreach ($vehiclesNeedPayment as $v)
-                        <div class="flex items-center justify-between gap-4 border-b border-amber-100 py-3 last:border-0 dark:border-amber-900/30">
-                            <div class="min-w-0">
-                                <div class="font-semibold text-amber-900 dark:text-amber-100">
-                                    {{ $v->nomor_polisi }}
-                                </div>
-                                <div class="truncate text-sm text-amber-700 dark:text-amber-300">
-                                    {{ $v->merek }} {{ $v->tipe }} &bull; {{ $v->nama_pemakai }}
-                                </div>
-                            </div>
-                            <div class="text-right shrink-0">
-                                <div class="text-xs font-medium text-amber-600 dark:text-amber-400">
-                                    Jatuh Tempo
-                                </div>
-                                <div class="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                                    {{ $v->masa_berlaku_pajak->format('d/m/Y') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+        @if (session('success'))
+            <div class="flex items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-medium text-teal-800 dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-200">
+                <flux:icon name="check-circle" class="size-5 shrink-0" />
+                <span>{{ session('success') }}</span>
             </div>
         @endif
+
+        <div class="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm dark:border-amber-900/50 dark:from-amber-950/40 dark:to-orange-950/40">
+            <div class="flex items-center justify-between border-b border-amber-200 px-5 py-4 dark:border-amber-900/50">
+                <div class="flex items-center gap-3">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60">
+                        <flux:icon name="calendar" class="size-5 text-amber-600 dark:text-amber-300" />
+                    </div>
+                    <div>
+                        <flux:heading size="sm" class="text-amber-900 dark:text-amber-100">
+                            Pajak Jatuh Tempo {{ $reminderYear }}
+                        </flux:heading>
+                        <flux:text size="sm" class="text-amber-700 dark:text-amber-300">
+                            {{ $reminderCount }} kendaraan perlu pembayaran pajak tahun ini
+                        </flux:text>
+                    </div>
+                </div>
+                <flux:badge color="amber">{{ $reminderCount }}</flux:badge>
+            </div>
+
+            <div class="max-h-96 overflow-y-auto px-5">
+                @forelse ($vehiclesDueThisYear as $v)
+                    <div class="flex flex-col gap-3 border-b border-amber-100 py-4 last:border-0 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/30">
+                        <div class="min-w-0">
+                            <div class="font-semibold text-amber-900 dark:text-amber-100">
+                                {{ $v->nomor_polisi }}
+                            </div>
+                            <div class="truncate text-sm text-amber-700 dark:text-amber-300">
+                                {{ $v->merek }} {{ $v->tipe }} &bull; {{ $v->nama_pemakai }}
+                            </div>
+                            <div class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                                Jatuh tempo {{ $v->masa_berlaku_pajak->format('d/m/Y') }}
+                            </div>
+                        </div>
+                        <form method="POST" action="{{ route('vehicles.tax-paid', $v) }}" class="flex shrink-0 items-center gap-2 sm:justify-end" onsubmit="return confirm('Tandai pajak sudah dibayar? Tanggal jatuh tempo pajak akan maju satu tahun. Tanggal STNK tidak akan berubah.')">
+                            @csrf
+                            <flux:badge color="amber">Perlu Dibayar</flux:badge>
+                            <flux:button type="submit" size="sm" icon="check" variant="primary" class="whitespace-nowrap bg-teal-600 text-white hover:bg-teal-700">
+                                Sudah Dibayar
+                            </flux:button>
+                        </form>
+                    </div>
+                @empty
+                    <div class="py-8 text-center">
+                        <flux:icon name="check-circle" class="mx-auto size-8 text-teal-500" />
+                        <flux:text class="mt-2 text-amber-700 dark:text-amber-300">
+                            Tidak ada kendaraan yang jatuh tempo pajak pada tahun {{ $reminderYear }}.
+                        </flux:text>
+                        <flux:text size="sm" class="mt-1 text-amber-600 dark:text-amber-400">
+                            Pembayaran pajak memajukan pengingat satu tahun; tanggal STNK tetap sesuai data admin.
+                        </flux:text>
+                    </div>
+                @endforelse
+            </div>
+        </div>
 
         {{-- Statistik --}}
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -137,7 +129,7 @@
                             {{ $expiredTax }}
                         </flux:heading>
                         <flux:text size="sm" class="text-slate-500 dark:text-zinc-400">
-                            Pajak Expired
+                            Pajak Belum Bayar
                         </flux:text>
                     </div>
                 </div>
@@ -155,7 +147,7 @@
                             {{ $expiredStnk }}
                         </flux:heading>
                         <flux:text size="sm" class="text-slate-500 dark:text-zinc-400">
-                            STNK Expired
+                            STNK Belum Bayar
                         </flux:text>
                     </div>
                 </div>
@@ -166,16 +158,16 @@
         {{-- Detail --}}
         <div class="grid items-start gap-5 lg:grid-cols-2">
 
-            {{-- Pajak Akan Expired --}}
+            {{-- Pajak Akan Jatuh Tempo --}}
             <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-cyan-100 dark:bg-zinc-900 dark:ring-cyan-900/60">
 
                 <div class="flex items-center justify-between border-b border-cyan-100 bg-gradient-to-r from-cyan-50 to-sky-50 px-5 py-4 dark:border-cyan-900/50 dark:from-cyan-950/30 dark:to-sky-950/30">
                     <div>
                         <flux:heading size="sm" class="text-slate-900 dark:text-white">
-                            Pajak Akan Expired
+                            Pajak Akan Jatuh Tempo
                         </flux:heading>
                         <flux:text size="sm" class="text-slate-500 dark:text-zinc-400">
-                            Dalam 30 hari
+                            Dalam 3 minggu
                         </flux:text>
                     </div>
 
@@ -202,7 +194,7 @@
                                 </div>
 
                                 <flux:badge color="cyan">
-                                    {{ $v->masa_berlaku_pajak->diffForHumans() }}
+                                    {{ diff_for_humans_id($v->masa_berlaku_pajak) }}
                                 </flux:badge>
 
                             </div>
@@ -211,7 +203,7 @@
 
                             <div class="py-6 text-center">
                                 <flux:text class="text-slate-500 dark:text-zinc-400">
-                                    Tidak ada kendaraan yang akan expired
+                                    Tidak ada kendaraan yang akan jatuh tempo
                                 </flux:text>
                             </div>
 

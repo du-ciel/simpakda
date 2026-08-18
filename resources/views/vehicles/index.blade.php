@@ -25,15 +25,15 @@
             </div>
         @endif
 
-        <form method="GET" class="grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-sky-100 sm:grid-cols-2 lg:grid-cols-3 dark:bg-slate-900 dark:ring-sky-900/60">
+        <form method="GET" id="filter-form" class="grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-sky-100 sm:grid-cols-2 lg:grid-cols-3 dark:bg-slate-900 dark:ring-sky-900/60">
             <flux:input name="search" :value="request('search')" placeholder="Cari nomor polisi, merek, pemakai..." icon="magnifying-glass" />
-            <select name="kategori" class="rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-sky-900 dark:bg-slate-900 dark:text-slate-200">
+            <select name="kategori" id="filter-kategori" class="rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-sky-900 dark:bg-slate-900 dark:text-slate-200">
                 <option value="">Semua Kategori</option>
-                @foreach ($kategoriList as $kategori)
-                    <option value="{{ $kategori }}" {{ request('kategori') == $kategori ? 'selected' : '' }}>{{ $kategori }}</option>
+                @foreach ($kategoriList as $k)
+                    <option value="{{ $k }}" {{ request('kategori') == $k ? 'selected' : '' }}>{{ $k }}</option>
                 @endforeach
             </select>
-            <select name="status" class="rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-sky-900 dark:bg-slate-900 dark:text-slate-200">
+            <select name="status" id="filter-status" class="rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-sky-900 dark:bg-slate-900 dark:text-slate-200">
                 <option value="">Semua Status</option>
                 <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                 <option value="non_aktif" {{ request('status') == 'non_aktif' ? 'selected' : '' }}>Non Aktif</option>
@@ -41,6 +41,14 @@
                 <option value="dijual" {{ request('status') == 'dijual' ? 'selected' : '' }}>Dijual</option>
             </select>
         </form>
+
+        <script>
+            document.querySelectorAll('#filter-form select, #filter-form input').forEach(function (el) {
+                el.addEventListener('change', function () {
+                    document.getElementById('filter-form').submit();
+                });
+            });
+        </script>
 
         <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-sky-100 dark:bg-slate-900 dark:ring-sky-900/60">
             <table class="w-full min-w-[980px]">
@@ -66,12 +74,12 @@
                             <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><div>{{ $vehicle->kategori }}</div>@if ($vehicle->sub_kategori)<div class="text-xs text-slate-500 dark:text-slate-400">{{ $vehicle->sub_kategori }}</div>@endif</td>
                             <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><div>{{ $vehicle->nama_pemakai }}</div><div class="text-xs text-slate-500 dark:text-slate-400">{{ $vehicle->jabatan_pemakai }}</div></td>
                             <td class="px-4 py-3 text-sm">
-                                @if ($vehicle->isPajakExpired()) <flux:badge color="red">Expired</flux:badge>
+                                @if ($vehicle->isPajakExpired()) <flux:badge color="red">Belum Bayar</flux:badge>
                                 @elseif ($vehicle->isPajakExpiringSoon()) <flux:badge color="cyan">{{ $vehicle->masa_berlaku_pajak->format('d/m/Y') }}</flux:badge>
                                 @else <span class="text-xs text-slate-600 dark:text-slate-300">{{ $vehicle->masa_berlaku_pajak->format('d/m/Y') }}</span> @endif
                             </td>
                             <td class="px-4 py-3 text-sm">
-                                @if ($vehicle->isStnkExpired()) <flux:badge color="red">Expired</flux:badge>
+                                @if ($vehicle->isStnkExpired()) <flux:badge color="red">Belum Bayar</flux:badge>
                                 @else <span class="text-xs text-slate-600 dark:text-slate-300">{{ $vehicle->masa_berlaku_stnk->format('d/m/Y') }}</span> @endif
                             </td>
                             <td class="px-4 py-3 text-sm">

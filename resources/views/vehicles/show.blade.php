@@ -91,14 +91,14 @@
                         <dd class="font-medium">
                             {{ $vehicle->masa_berlaku_pajak->format('d/m/Y') }}
                             @if ($vehicle->isPajakExpired())
-                                <flux:badge color="red" class="ml-2">Expired</flux:badge>
+                                <flux:badge color="red" class="ml-2">Belum Bayar</flux:badge>
                             @endif
                         </dd>
                         <dt class="text-slate-500 dark:text-slate-400">STNK</dt>
                         <dd class="font-medium">
                             {{ $vehicle->masa_berlaku_stnk->format('d/m/Y') }}
                             @if ($vehicle->isStnkExpired())
-                                <flux:badge color="red" class="ml-2">Expired</flux:badge>
+                                <flux:badge color="red" class="ml-2">Belum Bayar</flux:badge>
                             @endif
                         </dd>
                     </dl>
@@ -115,8 +115,8 @@
                         <dd class="font-medium">Rp {{ number_format($vehicle->anggaran_biaya, 0, ',', '.') }}</dd>
                         <dt class="text-slate-500 dark:text-slate-400">Biaya Plat/STNK</dt>
                         <dd class="font-medium">Rp {{ number_format($vehicle->biaya_plat_stnk, 0, ',', '.') }}</dd>
-                        <dt class="text-slate-500 dark:text-slate-400">Sumber Dana</dt>
-                        <dd class="font-medium">{{ $vehicle->sumber_dana }}</dd>
+                        <dt class="text-slate-500 dark:text-slate-400">Sumber Kendaraan</dt>
+                        <dd class="font-medium">{{ $vehicle->sumber_kendaraan }}</dd>
                     </dl>
                 </div>
             </div>

@@ -11,34 +11,41 @@ class VehicleFactory extends Factory
 
     public function definition(): array
     {
-        $type = fake()->randomElement(['motor', 'mobil']);
-
         return [
-            'type' => $type,
-            'plat_nomor' => strtoupper(fake()->bothify('?? ### ??')),
-            'merk' => $type === 'motor' ? fake()->randomElement(['Honda', 'Yamaha', 'Suzuki', 'Kawasaki', 'TVS']) : fake()->randomElement(['Toyota', 'Honda', 'Suzuki', 'Mitsubishi', 'Hyundai', 'Wuling']),
-            'model' => $type === 'motor' ? fake()->randomElement(['Vario', 'Beat', 'Nmax', 'Vixion', 'CBR']) : fake()->randomElement(['Avanza', 'Brio', 'Xpander', 'Ertiga', 'Calya']),
-            'warna' => fake()->randomElement(['Hitam', 'Putih', 'Merah', 'Biru', 'Abu-abu', 'Silver']),
-            'tahun' => fake()->numberBetween(2015, 2024),
-            'nomor_rangka' => strtoupper(fake()->bothify('MH1##########??????')),
-            'nomor_mesin' => strtoupper(fake()->bothify('NC##E########')),
-            'tanggal_pajak' => fake()->dateTimeBetween('-2 years', 'now'),
-            'jatuh_tempo_pajak' => fake()->dateTimeBetween('now', '+1 year'),
-            'masa_berlaku_stnk' => fake()->dateTimeBetween('now', '+5 years'),
-            'nama_pemilik' => fake()->name(),
-            'alamat' => fake()->address(),
-            'status' => fake()->randomElement(['aktif', 'aktif', 'aktif', 'non_aktif']),
+            'merek' => fake()->randomElement(['Toyota', 'Honda', 'Suzuki', 'Mitsubishi', 'Hyundai', 'Wuling']),
+            'tipe' => fake()->randomElement(['Avanza', 'Brio', 'Ertiga', 'Xpander', 'Stargazer']),
+            'jenis' => fake()->randomElement(['Minibus', 'Sedan', 'Pick Up']),
+            'nomor_polisi' => strtoupper(fake()->unique()->bothify('?? #### ???')),
+            'nomor_chasis' => strtoupper(fake()->unique()->bothify('MH1##########??????')),
+            'nomor_mesin' => strtoupper(fake()->unique()->bothify('NC##E########')),
+            'tahun_pemakaian' => fake()->numberBetween(1990, (int) date('Y')),
+            'masa_berlaku_pajak' => fake()->dateTimeBetween('-1 year', '+1 year')->format('Y-m-d'),
+            'masa_berlaku_stnk' => fake()->dateTimeBetween('today', '+5 years')->format('Y-m-d'),
+            'nama_pemakai' => fake()->name(),
+            'jabatan_pemakai' => fake()->jobTitle(),
+            'anggaran_biaya' => fake()->numberBetween(0, 500000000),
+            'biaya_plat_stnk' => fake()->numberBetween(0, 1000000),
+            'sumber_kendaraan' => fake()->randomElement(['APBD', 'APBN', 'Hibah']),
+            'kategori' => fake()->randomElement(['roda_2', 'roda_4']),
+            'sub_kategori' => fake()->optional()->word(),
+            'status' => fake()->randomElement(['aktif', 'aktif', 'aktif', 'non_aktif', 'perbaikan', 'dijual']),
         ];
     }
 
     public function motor(): static
     {
-        return $this->state(fn (array $attributes) => ['type' => 'motor']);
+        return $this->state(fn (array $attributes) => [
+            'kategori' => 'roda_2',
+            'jenis' => 'Sepeda Motor',
+        ]);
     }
 
     public function mobil(): static
     {
-        return $this->state(fn (array $attributes) => ['type' => 'mobil']);
+        return $this->state(fn (array $attributes) => [
+            'kategori' => 'roda_4',
+            'jenis' => 'Minibus',
+        ]);
     }
 
     public function aktif(): static

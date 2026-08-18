@@ -1,13 +1,5 @@
 <x-layouts::app :title="__('Dashboard')">
     <div class="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 pb-8">
-        @php
-            $totalVehicle = \App\Models\Vehicle::count();
-            $activeVehicles = \App\Models\Vehicle::where('status', 'aktif')->count();
-            $expiredTax = \App\Models\Vehicle::where('masa_berlaku_pajak', '<', now())->count();
-            $expiredStnk = \App\Models\Vehicle::where('masa_berlaku_stnk', '<', now())->count();
-            $activePercentage = $totalVehicle > 0 ? round(($activeVehicles / $totalVehicle) * 100) : 0;
-        @endphp
-
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-600 via-sky-700 to-indigo-800 px-6 py-7 text-white shadow-lg shadow-sky-900/15 sm:px-8">
             <div class="pointer-events-none absolute -right-12 -top-16 size-48 rounded-full border-[18px] border-white/10"></div>
             <div class="pointer-events-none absolute -bottom-24 right-24 size-56 rounded-full border-[22px] border-white/10"></div>
@@ -56,7 +48,7 @@
                     </div>
                     <div>
                         <flux:heading size="lg" class="text-slate-900 dark:text-white">{{ $expiredTax }}</flux:heading>
-                        <flux:text size="sm" class="text-slate-500 dark:text-slate-400">Pajak Expired</flux:text>
+                        <flux:text size="sm" class="text-slate-500 dark:text-slate-400">Pajak Belum Bayar</flux:text>
                     </div>
                 </div>
             </div>
@@ -69,7 +61,7 @@
                     </div>
                     <div>
                         <flux:heading size="lg" class="text-slate-900 dark:text-white">{{ $expiredStnk }}</flux:heading>
-                        <flux:text size="sm" class="text-slate-500 dark:text-slate-400">STNK Expired</flux:text>
+                        <flux:text size="sm" class="text-slate-500 dark:text-slate-400">STNK Belum Bayar</flux:text>
                     </div>
                 </div>
             </div>

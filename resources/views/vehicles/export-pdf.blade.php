@@ -151,7 +151,7 @@
                 <th style="width:5%">Pajak</th>
                 <th style="width:5%">STNK</th>
                 <th style="width:5%">Status</th>
-                <th style="width:7%">Sumber Dana</th>
+                <th style="width:7%">Sumber Kendaraan</th>
                 <th style="width:7%">No Chasis</th>
                 <th style="width:7%">No Mesin</th>
                 <th style="width:5%">Anggaran</th>
@@ -176,14 +176,14 @@
                     <td style="text-align:center;">{{ $v->tahun_pemakaian }}</td>
                     <td style="text-align:center;">
                         @if ($v->isPajakExpired())
-                            <span class="badge badge-red">Expired</span>
+                            <span class="badge badge-red">Belum Bayar</span>
                         @else
                             {{ $v->masa_berlaku_pajak->format('d/m/Y') }}
                         @endif
                     </td>
                     <td style="text-align:center;">
                         @if ($v->isStnkExpired())
-                            <span class="badge badge-red">Expired</span>
+                            <span class="badge badge-red">Belum Bayar</span>
                         @else
                             {{ $v->masa_berlaku_stnk->format('d/m/Y') }}
                         @endif
@@ -199,7 +199,7 @@
                             <span class="badge badge-zinc">Non Aktif</span>
                         @endif
                     </td>
-                    <td>{{ $v->sumber_dana }}</td>
+                    <td>{{ $v->sumber_kendaraan }}</td>
                     <td style="font-size:7px;">{{ $v->nomor_chasis }}</td>
                     <td style="font-size:7px;">{{ $v->nomor_mesin }}</td>
                     <td style="text-align:right;">Rp {{ number_format($v->anggaran_biaya, 0, ',', '.') }}</td>

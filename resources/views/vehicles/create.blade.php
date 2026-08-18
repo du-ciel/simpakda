@@ -49,7 +49,11 @@
                     <flux:heading size="sm" class="text-sky-900 dark:text-sky-100">Kategori</flux:heading>
                 </div>
                 <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
-                    <flux:input label="Kategori *" name="kategori" :value="old('kategori')" placeholder="Contoh: Roda 4, Roda 2" required />
+                    <flux:select label="Kategori *" name="kategori" required>
+                        <flux:select.option value="">Pilih Kategori</flux:select.option>
+                        <flux:select.option value="roda_2" :selected="old('kategori') == 'roda_2'">Roda 2</flux:select.option>
+                        <flux:select.option value="roda_4" :selected="old('kategori') == 'roda_4'">Roda 4</flux:select.option>
+                    </flux:select>
                     <flux:input label="Sub Kategori" name="sub_kategori" :value="old('sub_kategori')" placeholder="Contoh: Ambulans, Patroli" />
                 </div>
             </div>
@@ -61,7 +65,7 @@
                 <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-3">
                     <flux:input label="Anggaran Biaya" name="anggaran_biaya" :value="old('anggaran_biaya')" type="number" step="1000" min="0" placeholder="0" />
                     <flux:input label="Biaya Plat/STNK" name="biaya_plat_stnk" :value="old('biaya_plat_stnk')" type="number" step="1000" min="0" placeholder="0" />
-                    <flux:input label="Sumber Dana *" name="sumber_dana" :value="old('sumber_dana')" placeholder="Contoh: APD, BLUD" required />
+                    <flux:input label="Sumber Kendaraan *" name="sumber_kendaraan" :value="old('sumber_kendaraan')" placeholder="Contoh: APD, BLUD" required />
                 </div>
             </div>
 
