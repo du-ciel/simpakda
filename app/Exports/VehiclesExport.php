@@ -32,12 +32,19 @@ class VehiclesExport
         $filename = 'data-kendaraan-'.date('Y-m-d-His').'.xlsx';
 
         return response()->streamDownload(function (): void {
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+
             $spreadsheet = $this->buildSpreadsheet();
 
-            (new Xlsx($spreadsheet))->save('php://output');
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
             $spreadsheet->disconnectWorksheets();
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
 
@@ -46,16 +53,60 @@ class VehiclesExport
         $filename = 'data-kendaraan-'.date('Y-m-d-His').'.csv';
 
         return response()->streamDownload(function (): void {
-            $spreadsheet = $this->buildSpreadsheet();
-            $writer = new Csv($spreadsheet);
-            $writer->setDelimiter(',');
-            $writer->setEnclosure('"');
-            $writer->setLineEnding("\r\n");
-            $writer->setUseBOM(true);
-            $writer->save('php://output');
-            $spreadsheet->disconnectWorksheets();
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+
+            $handle = fopen('php://output', 'w');
+
+            // UTF-8 BOM agar Microsoft Excel membuka karakter dengan benar di Windows
+            fputs($handle, "\xEF\xBB\xBF");
+
+            // Header kolom
+            fputcsv($handle, [
+                'No',
+                'Merek',
+                'No Polisi',
+                'Tipe',
+                'No Chasis',
+                'No Mesin',
+                'Tahun Pemakaian',
+                'Masa Berlaku Pajak Tahunan',
+                'Masa Berlaku STNK',
+                'Bahan Bakar',
+                'Nama Pemakai',
+                'Jabatan',
+                'Keterangan Kendaraan',
+                'Sumber',
+                'Anggaran',
+            ]);
+
+            $no = 1;
+            foreach ($this->vehicles as $v) {
+                fputcsv($handle, [
+                    $no++,
+                    $v->merek ?? '-',
+                    $v->nomor_polisi ?? '-',
+                    $v->tipe ?? '-',
+                    $v->nomor_chasis ?? '-',
+                    $v->nomor_mesin ?? '-',
+                    $v->tahun_pemakaian ?? '-',
+                    $v->masa_berlaku_pajak?->format('d/m/Y') ?? '-',
+                    $v->masa_berlaku_stnk?->format('d/m/Y') ?? '-',
+                    $v->bahan_bakar ?? '-',
+                    $v->nama_pemakai ?? '-',
+                    $v->jabatan_pemakai ?? '-',
+                    $v->keterangan_kendaraan ?? '-',
+                    $v->sumber_kendaraan ?? '-',
+                    $v->anggaran_biaya ?? '-',
+                ]);
+            }
+
+            fclose($handle);
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
 
@@ -64,7 +115,7 @@ class VehiclesExport
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
-        // 1. URUTAN HEADER DISESUAIKAN DENGAN PDF
+        // Urutan header tabel
         $headers = [
             'No',
             'Merek',
@@ -73,7 +124,6 @@ class VehiclesExport
             'No Chasis',
             'No Mesin',
             'Tahun Pemakaian',
-            'Tahun',
             'Masa Berlaku Pajak Tahunan',
             'Masa Berlaku STNK',
             'Bahan Bakar',
@@ -116,23 +166,23 @@ class VehiclesExport
         $row = 2;
         foreach ($this->vehicles as $v) {
             $sheet->getRowDimension($row)->setRowHeight(20);
-            //Urutan Data
+            // Urutan Data (null-safe)
             $data = [
                 $no,
-                $v->merek,
-                $v->nomor_polisi,
-                $v->tipe,
-                $v->nomor_chasis,
-                $v->nomor_mesin,
-                $v->tahun_pemakaian,
-                $v->masa_berlaku_pajak->format('d/m/Y'), // Dikembalikan seperti semula (hanya cetak tanggal)
-                $v->masa_berlaku_stnk->format('d/m/Y'),  // Dikembalikan seperti semula (hanya cetak tanggal)
-                $v->bahan_bakar,
-                $v->nama_pemakai,
-                $v->jabatan_pemakai,
+                $v->merek ?? '-',
+                $v->nomor_polisi ?? '-',
+                $v->tipe ?? '-',
+                $v->nomor_chasis ?? '-',
+                $v->nomor_mesin ?? '-',
+                $v->tahun_pemakaian ?? '-',
+                $v->masa_berlaku_pajak?->format('d/m/Y') ?? '-',
+                $v->masa_berlaku_stnk?->format('d/m/Y') ?? '-',
+                $v->bahan_bakar ?? '-',
+                $v->nama_pemakai ?? '-',
+                $v->jabatan_pemakai ?? '-',
                 $v->keterangan_kendaraan ?? '-',
-                $v->sumber_kendaraan,
-                $v->anggaran_biaya,
+                $v->sumber_kendaraan ?? '-',
+                $v->anggaran_biaya ?? '-',
             ];
 
             $colIndex = 1;
