@@ -1,6 +1,6 @@
 /.phpunit.cache
 /node_modules
-/public/build
+# /public/build diikutsertakan agar hasil npm run build terkirim ke Vercel
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
