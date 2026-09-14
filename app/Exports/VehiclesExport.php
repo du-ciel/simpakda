@@ -64,31 +64,31 @@ class VehiclesExport
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
+        // 1. URUTAN HEADER DISESUAIKAN DENGAN PDF
         $headers = [
             'No',
-            'No Polisi',
             'Merek',
+            'No Polisi',
             'Tipe',
-            'Jenis',
-            'Kategori',
-            'Sub Kategori',
-            'Pemakai',
-            'Jabatan',
-            'Tahun Pemakaian',
-            'Masa Berlaku Pajak',
-            'Masa Berlaku STNK',
-            'Status Pajak',
-            'Status Kendaraan',
             'No Chasis',
             'No Mesin',
-            'Sumber Kendaraan',
-            'Anggaran Biaya',
-            'Biaya Plat/STNK',
-            'Keterangan Pajak',
+            'Tahun Pemakaian',
+            'Tahun',
+            'Masa Berlaku Pajak Tahunan',
+            'Masa Berlaku STNK',
+            'Bahan Bakar',
+            'Nama Pemakai',
+            'Jabatan',
             'Keterangan Kendaraan',
+            'Sumber',
+            'Anggaran',
         ];
 
-        $sheet->setAutoFilter('A1:U1');
+        // Mendapatkan huruf kolom terakhir secara otomatis
+        $highestColumn = Coordinate::stringFromColumnIndex(count($headers));
+        
+        // Atur filter dinamis
+        $sheet->setAutoFilter('A1:' . $highestColumn . '1');
         $sheet->getRowDimension(1)->setRowHeight(30);
 
         $colIndex = 1;
@@ -116,29 +116,23 @@ class VehiclesExport
         $row = 2;
         foreach ($this->vehicles as $v) {
             $sheet->getRowDimension($row)->setRowHeight(20);
-
+            //Urutan Data
             $data = [
                 $no,
-                $v->nomor_polisi,
                 $v->merek,
+                $v->nomor_polisi,
                 $v->tipe,
-                $v->jenis,
-                $v->kategori,
-                $v->sub_kategori ?? '',
-                $v->nama_pemakai,
-                $v->jabatan_pemakai,
-                $v->tahun_pemakaian,
-                $v->masa_berlaku_pajak->format('d/m/Y'),
-                $v->masa_berlaku_stnk->format('d/m/Y'),
-                $v->isPajakExpired() ? 'Expired' : 'Aktif',
-                ucfirst(str_replace('_', ' ', $v->status)),
                 $v->nomor_chasis,
                 $v->nomor_mesin,
+                $v->tahun_pemakaian,
+                $v->masa_berlaku_pajak->format('d/m/Y'), // Dikembalikan seperti semula (hanya cetak tanggal)
+                $v->masa_berlaku_stnk->format('d/m/Y'),  // Dikembalikan seperti semula (hanya cetak tanggal)
+                $v->bahan_bakar,
+                $v->nama_pemakai,
+                $v->jabatan_pemakai,
+                $v->keterangan_kendaraan ?? '-',
                 $v->sumber_kendaraan,
                 $v->anggaran_biaya,
-                $v->biaya_plat_stnk,
-                $v->keterangan_pajak ?? '',
-                $v->keterangan_kendaraan ?? '',
             ];
 
             $colIndex = 1;
@@ -173,7 +167,8 @@ class VehiclesExport
             $row++;
         }
 
-        foreach (range('A', 'U') as $col) {
+        // 3. AUTOSIZE KOLOM DINAMIS
+        foreach (range('A', $highestColumn) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

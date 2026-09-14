@@ -1,0 +1,32 @@
+# Development and test files
+/tests
+/phpunit.xml
+/phpstan.neon
+/pint.json
+/.editorconfig
+/.git
+/.github
+/.claude
+/.npmrc
+
+# Documentation and temporary files
+/*.docx
+/*.pdf
+/SIMPAKDA_*
+/SETUP-GUIDE.md
+/generate-manual.php
+/public/QuickShareSetup.exe
+
+# Local storage and cache
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/database/*.sqlite
+/database/*.sqlite-journal
+
+# Node modules (Vite build output is in public/build)
+/node_modules
+
+# Keep vendor directory for PHP runtime unless managed by custom CI
+!vendor

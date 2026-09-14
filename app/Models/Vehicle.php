@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Vehicle extends Model
 {
@@ -14,6 +15,7 @@ class Vehicle extends Model
         'merek',
         'tipe',
         'jenis',
+        'bahan_bakar',
         'nomor_polisi',
         'nomor_chasis',
         'nomor_mesin',
@@ -63,6 +65,7 @@ class Vehicle extends Model
             }
         });
     }
+    
 
     public function histories()
     {
@@ -124,4 +127,9 @@ class Vehicle extends Model
     {
         return $this->masa_berlaku_pajak->betweenIncluded(today(), today()->addDays($days));
     }
+    /** * Data penyusutan kendaraan. */
+    public function depreciation(): HasOne 
+    {
+        return $this->hasOne(Depreciation::class); }
+
 }

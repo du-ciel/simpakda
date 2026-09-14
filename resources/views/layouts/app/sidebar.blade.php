@@ -3,8 +3,12 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-gradient-to-b from-sky-50 to-cyan-50 text-slate-800 dark:from-sky-950/30 dark:to-cyan-950/30 dark:text-slate-100">
-        <flux:sidebar sticky collapsible="mobile" class="dark border-e border-white/15 bg-gradient-to-br from-cyan-700 via-sky-800 to-indigo-900 shadow-[8px_0_24px_-10px_rgba(15,23,42,0.7)]">
+    <body class="min-h-screen bg-slate-50 text-slate-800 dark:bg-[#020617] dark:text-slate-100">
+        
+        {{-- ==========================================
+            SIDEBAR (Tema Deep Navy / Slate)
+        =========================================== --}}
+        <flux:sidebar sticky collapsible="mobile" class="dark border-e border-white/5 bg-gradient-to-b from-[#111827] to-[#0b334d] shadow-[8px_0_24px_-10px_rgba(0,0,0,0.6)]">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate class="text-white" />
                 <flux:sidebar.collapse class="text-white hover:bg-white/10 lg:hidden" />
@@ -21,21 +25,41 @@
                     <flux:sidebar.item icon="truck" :href="route('vehicles.index')" :current="request()->routeIs('vehicles.*')" wire:navigate class="text-white hover:bg-white/10 hover:text-white data-current:bg-white/15 data-current:text-white">
                         {{ __('Kendaraan') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="calculator" :href="route('anggaran')" :current="request()->routeIs('anggaran')" wire:navigate class="text-white hover:bg-white/10 hover:text-white data-current:bg-white/15 data-current:text-white">
+                        {{ __('Anggaran') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
+                <flux:sidebar.group
+    :heading="__('Menu Tambahan')"
+    class="mt-6 grid text-white"
+>
+    <flux:sidebar.item
+        icon="chart-pie"
+        :href="route('penyusutan.index')"
+        :current="request()->routeIs('penyusutan.*')"
+        wire:navigate
+        class="text-white hover:bg-white/10 hover:text-white data-current:bg-white/15 data-current:text-white"
+    >
+        {{ __('Penyusutan Kendaraan') }}
+    </flux:sidebar.item>
+</flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
-            <div class="mx-3 mb-3 rounded-2xl border border-white/15 bg-white/10 p-3 text-xs text-white">
-                <div class="flex items-center gap-2 font-medium text-white"><flux:icon name="shield-check" class="size-4 text-white" /> Sistem Armada</div>
-                <div class="mt-1 text-white/75">Kelola kendaraan dengan mudah.</div>
+            {{-- Kartu Info Bawah Sidebar --}}
+            <div class="mx-3 mb-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white backdrop-blur-md">
+                <div class="flex items-center gap-2 font-medium text-white"><flux:icon name="shield-check" class="size-4 text-cyan-400" /> Sistem Armada</div>
+                <div class="mt-1 text-slate-300">Kelola kendaraan dengan mudah.</div>
             </div>
 
             <x-desktop-user-menu class="hidden lg:block text-white" :name="auth()->user()->name" />
         </flux:sidebar>
 
-        <!-- Mobile User Menu -->
-        <flux:header class="border-b border-white/15 bg-gradient-to-br from-cyan-700 via-sky-800 to-indigo-900 text-white shadow-[0_4px_16px_-8px_rgba(15,23,42,0.7)] lg:hidden">
+        {{-- ==========================================
+            MOBILE HEADER (Tema Deep Navy / Slate)
+        =========================================== --}}
+        <flux:header class="border-b border-white/5 bg-gradient-to-r from-[#111827] to-[#0b334d] text-white shadow-md lg:hidden">
             <flux:sidebar.toggle class="text-white lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
@@ -89,6 +113,7 @@
             </flux:dropdown>
         </flux:header>
 
+        {{-- Main Content Slot --}}
         {{ $slot }}
 
         @persist('toast')

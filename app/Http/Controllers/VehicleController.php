@@ -5,191 +5,499 @@ namespace App\Http\Controllers;
 use App\Exports\VehiclesExport;
 use App\Models\Vehicle;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
+    /**
+     * Menampilkan daftar kendaraan.
+     */
     public function index(Request $request)
     {
         $query = Vehicle::query();
 
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nomor_polisi', 'like', '%'.$search.'%')
-                    ->orWhere('merek', 'like', '%'.$search.'%')
-                    ->orWhere('nama_pemakai', 'like', '%'.$search.'%');
-            });
-        }
+        // Terapkan seluruh filter berdasarkan query parameter URL.
+        $this->applyFilters($query, $request);
 
-        if ($request->has('kategori') && $request->kategori) {
-            $query->where('kategori', $request->kategori);
-        }
+        /*
+         * Pagination.
+         *
+         * withQueryString() memastikan:
+         *
+         * /vehicles?kategori=roda_2&page=2
+         *
+         * tetap membawa kategori saat pindah halaman.
+         */
+        $vehicles = $query
+            ->orderByDesc('created_at')
+            ->paginate(10)
+            ->withQueryString();
 
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
-        }
+        /*
+         * Data dropdown kategori.
+         */
+        $kategoriList = Vehicle::query()
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->distinct()
+            ->orderBy('kategori')
+            ->pluck('kategori');
 
-        $vehicles = $query->orderBy('created_at', 'desc')->paginate(10);
-        $kategoriList = Vehicle::select('kategori')->distinct()->pluck('kategori');
+        /*
+         * Data dropdown sumber kendaraan.
+         */
+        $sumberList = Vehicle::query()
+            ->whereNotNull('sumber_kendaraan')
+            ->where('sumber_kendaraan', '!=', '')
+            ->distinct()
+            ->orderBy('sumber_kendaraan')
+            ->pluck('sumber_kendaraan');
 
-        return view('vehicles.index', compact('vehicles', 'kategoriList'));
+        /*
+         * Data dropdown tahun.
+         */
+        $tahunList = Vehicle::query()
+            ->whereNotNull('tahun_pemakaian')
+            ->distinct()
+            ->orderByDesc('tahun_pemakaian')
+            ->pluck('tahun_pemakaian');
+
+        return view('vehicles.index', [
+            'vehicles' => $vehicles,
+            'kategoriList' => $kategoriList,
+            'sumberList' => $sumberList,
+            'tahunList' => $tahunList,
+        ]);
     }
 
+    /**
+     * Form tambah kendaraan.
+     */
     public function create()
     {
         return view('vehicles.create');
     }
 
+    /**
+     * Simpan kendaraan baru.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'merek' => 'required|string|max:50',
             'tipe' => 'required|string|max:50',
             'jenis' => 'required|string|max:50',
+            'bahan_bakar' => 'nullable|string|max:50',
+
             'nomor_polisi' => 'required|string|max:20|unique:vehicles,nomor_polisi',
             'nomor_chasis' => 'required|string|max:50|unique:vehicles,nomor_chasis',
             'nomor_mesin' => 'required|string|max:50|unique:vehicles,nomor_mesin',
-            'tahun_pemakaian' => 'required|digits:4|integer|min:1990|max:'.date('Y'),
+
+            'tahun_pemakaian' => 'required|digits:4|integer|min:1990|max:' . date('Y'),
+
             'masa_berlaku_pajak' => 'required|date',
             'masa_berlaku_stnk' => 'required|date',
+
             'nama_pemakai' => 'required|string|max:100',
             'jabatan_pemakai' => 'required|string|max:100',
+
             'keterangan_pajak' => 'nullable|string',
             'keterangan_kendaraan' => 'nullable|string',
+
             'anggaran_biaya' => 'nullable|numeric|min:0',
             'biaya_plat_stnk' => 'nullable|numeric|min:0',
+
             'sumber_kendaraan' => 'required|string|max:100',
             'kategori' => 'required|string|max:50',
             'sub_kategori' => 'nullable|string|max:50',
+
             'status' => 'required|in:aktif,non_aktif,perbaikan,dijual',
         ]);
 
-        $validated['anggaran_biaya'] = $validated['anggaran_biaya'] ?? 0;
-        $validated['biaya_plat_stnk'] = $validated['biaya_plat_stnk'] ?? 0;
+        $validated['anggaran_biaya'] =
+            $validated['anggaran_biaya'] ?? 0;
+
+        $validated['biaya_plat_stnk'] =
+            $validated['biaya_plat_stnk'] ?? 0;
 
         Vehicle::create($validated);
 
-        return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil ditambahkan.');
+        return redirect()
+            ->route('vehicles.index')
+            ->with(
+                'success',
+                'Kendaraan berhasil ditambahkan.'
+            );
     }
 
+    /**
+     * Detail kendaraan.
+     */
     public function show(Vehicle $vehicle)
     {
         $vehicle->load('histories.user');
 
-        return view('vehicles.show', compact('vehicle'));
+        return view(
+            'vehicles.show',
+            compact('vehicle')
+        );
     }
 
+    /**
+     * Form edit kendaraan.
+     */
     public function edit(Vehicle $vehicle)
     {
-        return view('vehicles.edit', compact('vehicle'));
+        return view(
+            'vehicles.edit',
+            compact('vehicle')
+        );
     }
 
-    public function update(Request $request, Vehicle $vehicle)
-    {
+    /**
+     * Update kendaraan.
+     */
+    public function update(
+        Request $request,
+        Vehicle $vehicle
+    ) {
         $validated = $request->validate([
             'merek' => 'required|string|max:50',
             'tipe' => 'required|string|max:50',
             'jenis' => 'required|string|max:50',
-            'nomor_polisi' => 'required|string|max:20|unique:vehicles,nomor_polisi,'.$vehicle->id,
-            'nomor_chasis' => 'required|string|max:50|unique:vehicles,nomor_chasis,'.$vehicle->id,
-            'nomor_mesin' => 'required|string|max:50|unique:vehicles,nomor_mesin,'.$vehicle->id,
-            'tahun_pemakaian' => 'required|digits:4|integer|min:1990|max:'.date('Y'),
+            'bahan_bakar' => 'nullable|string|max:50',
+
+            'nomor_polisi' =>
+                'required|string|max:20|unique:vehicles,nomor_polisi,' .
+                $vehicle->id,
+
+            'nomor_chasis' =>
+                'required|string|max:50|unique:vehicles,nomor_chasis,' .
+                $vehicle->id,
+
+            'nomor_mesin' =>
+                'required|string|max:50|unique:vehicles,nomor_mesin,' .
+                $vehicle->id,
+
+            'tahun_pemakaian' =>
+                'required|digits:4|integer|min:1990|max:' .
+                date('Y'),
+
             'masa_berlaku_pajak' => 'required|date',
             'masa_berlaku_stnk' => 'required|date',
+
             'nama_pemakai' => 'required|string|max:100',
             'jabatan_pemakai' => 'required|string|max:100',
+
             'keterangan_pajak' => 'nullable|string',
             'keterangan_kendaraan' => 'nullable|string',
+
             'anggaran_biaya' => 'nullable|numeric|min:0',
             'biaya_plat_stnk' => 'nullable|numeric|min:0',
+
             'sumber_kendaraan' => 'required|string|max:100',
             'kategori' => 'required|string|max:50',
             'sub_kategori' => 'nullable|string|max:50',
-            'status' => 'required|in:aktif,non_aktif,perbaikan,dijual',
+
+            'status' =>
+                'required|in:aktif,non_aktif,perbaikan,dijual',
         ]);
 
-        $validated['anggaran_biaya'] = $validated['anggaran_biaya'] ?? 0;
-        $validated['biaya_plat_stnk'] = $validated['biaya_plat_stnk'] ?? 0;
+        $validated['anggaran_biaya'] =
+            $validated['anggaran_biaya'] ?? 0;
 
-        if ($vehicle->masa_berlaku_pajak?->format('Y-m-d') !== $validated['masa_berlaku_pajak']) {
+        $validated['biaya_plat_stnk'] =
+            $validated['biaya_plat_stnk'] ?? 0;
+
+        /*
+         * Jika tanggal pajak berubah,
+         * reset waktu pembayaran pajak.
+         */
+        if (
+            $vehicle->masa_berlaku_pajak?->format('Y-m-d')
+            !== $validated['masa_berlaku_pajak']
+        ) {
             $validated['pajak_dibayar_at'] = null;
         }
 
         $vehicle->update($validated);
 
-        return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil diupdate.');
+        /*
+         * Kembalikan filter + halaman dari halaman index.
+         */
+        $filters = $request->only([
+            'search',
+            'kategori',
+            'status',
+            'pajak_stnk',
+            'sumber',
+            'tahun',
+            'page',
+        ]);
+
+        $filters = array_filter(
+            $filters,
+            fn ($value) =>
+                $value !== null &&
+                $value !== ''
+        );
+
+        return redirect()
+            ->route(
+                'vehicles.index',
+                $filters
+            )
+            ->with(
+                'success',
+                'Kendaraan berhasil diupdate.'
+            );
     }
 
-    public function destroy(Vehicle $vehicle)
-    {
+    /**
+     * Hapus kendaraan.
+     */
+    public function destroy(
+        Request $request,
+        Vehicle $vehicle
+    ) {
         $vehicle->delete();
 
-        return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil dihapus.');
+        /*
+         * Pertahankan filter + halaman.
+         */
+        $filters = $request->only([
+            'search',
+            'kategori',
+            'status',
+            'pajak_stnk',
+            'sumber',
+            'tahun',
+            'page',
+        ]);
+
+        $filters = array_filter(
+            $filters,
+            fn ($value) =>
+                $value !== null &&
+                $value !== ''
+        );
+
+        return redirect()
+            ->route(
+                'vehicles.index',
+                $filters
+            )
+            ->with(
+                'success',
+                'Kendaraan berhasil dihapus.'
+            );
     }
 
+    /**
+     * Menandai pajak sebagai sudah dibayar.
+     */
     public function markTaxPaid(Vehicle $vehicle)
     {
-        if ($vehicle->masa_berlaku_pajak->year > now()->year) {
-            return redirect()->route('monitoring')->with(
-                'success',
-                'Pajak kendaraan '.$vehicle->nomor_polisi.' sudah dijadwalkan sampai '.$vehicle->masa_berlaku_pajak->format('d/m/Y').'.'
-            );
+        if (
+            $vehicle->masa_berlaku_pajak->year
+            > now()->year
+        ) {
+            return redirect()
+                ->route('monitoring')
+                ->with(
+                    'success',
+                    'Pajak kendaraan ' .
+                    $vehicle->nomor_polisi .
+                    ' sudah dijadwalkan sampai ' .
+                    $vehicle->masa_berlaku_pajak
+                        ->format('d/m/Y') .
+                    '.'
+                );
         }
 
-        $nextTaxDueDate = $vehicle->masa_berlaku_pajak->copy()->addYearNoOverflow();
+        $nextTaxDueDate =
+            $vehicle->masa_berlaku_pajak
+                ->copy()
+                ->addYearNoOverflow();
 
         $vehicle->update([
-            // Pembayaran pajak selalu memperpanjang jatuh tempo satu tahun.
             'masa_berlaku_pajak' => $nextTaxDueDate,
             'pajak_dibayar_at' => now(),
         ]);
 
-        return redirect()->route('monitoring')->with(
-            'success',
-            'Pajak kendaraan '.$vehicle->nomor_polisi.' sudah dibayar. Pengingat berikutnya: '.$nextTaxDueDate->format('d/m/Y').'.'
-        );
+        return redirect()
+            ->route('monitoring')
+            ->with(
+                'success',
+                'Pajak kendaraan ' .
+                $vehicle->nomor_polisi .
+                ' sudah dibayar. Pengingat berikutnya: ' .
+                $nextTaxDueDate->format('d/m/Y') .
+                '.'
+            );
     }
 
+    /**
+     * Export kendaraan.
+     */
     public function export(Request $request)
     {
         $query = Vehicle::query();
 
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nomor_polisi', 'like', '%'.$search.'%')
-                    ->orWhere('merek', 'like', '%'.$search.'%')
-                    ->orWhere('nama_pemakai', 'like', '%'.$search.'%');
-            });
-        }
+        $this->applyFilters(
+            $query,
+            $request
+        );
 
-        if ($request->has('kategori') && $request->kategori) {
-            $query->where('kategori', $request->kategori);
-        }
+        $vehicles = $query
+            ->orderByDesc('created_at')
+            ->get();
 
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $vehicles = $query->orderBy('created_at', 'desc')->get();
-        $format = $request->get('format', 'xlsx');
+        $format =
+            $request->get(
+                'format',
+                'xlsx'
+            );
 
         if ($format === 'csv') {
-            return (new VehiclesExport($vehicles->all()))->downloadCsv();
+            return (new VehiclesExport(
+                $vehicles->all()
+            ))->downloadCsv();
         }
 
         if ($format === 'pdf') {
-            $pdf = Pdf::loadView('vehicles.export-pdf', [
-                'vehicles' => $vehicles,
-                'printedAt' => now()->format('d/m/Y H:i'),
-            ]);
+            $pdf = Pdf::loadView(
+                'vehicles.export-pdf',
+                [
+                    'vehicles' => $vehicles,
+                    'printedAt' =>
+                        now()->format('d/m/Y H:i'),
+                ]
+            );
 
-            $pdf->setPaper('A4', 'landscape');
+            $pdf->setPaper(
+                'A4',
+                'landscape'
+            );
 
-            return $pdf->download('data-kendaraan-'.date('Y-m-d-His').'.pdf');
+            return $pdf->download(
+                'data-kendaraan-' .
+                date('Y-m-d-His') .
+                '.pdf'
+            );
         }
 
-        return (new VehiclesExport($vehicles->all()))->downloadXlsx();
+        return (new VehiclesExport(
+            $vehicles->all()
+        ))->downloadXlsx();
+    }
+
+    /**
+     * Terapkan seluruh filter kendaraan.
+     */
+    private function applyFilters(
+        Builder $query,
+        Request $request
+    ): void {
+        /*
+         * 1. PENCARIAN
+         */
+        if ($request->filled('search')) {
+            $search =
+                trim($request->input('search'));
+
+            $query->where(function ($q) use ($search) {
+                $q->where(
+                    'nomor_polisi',
+                    'like',
+                    '%' . $search . '%'
+                )
+                ->orWhere(
+                    'merek',
+                    'like',
+                    '%' . $search . '%'
+                )
+                ->orWhere(
+                    'nama_pemakai',
+                    'like',
+                    '%' . $search . '%'
+                );
+            });
+        }
+
+        /*
+         * 2. KATEGORI
+         */
+        if ($request->filled('kategori')) {
+            $query->where(
+                'kategori',
+                $request->input('kategori')
+            );
+        }
+
+        /*
+         * 3. STATUS
+         */
+        if ($request->filled('status')) {
+            $query->where(
+                'status',
+                $request->input('status')
+            );
+        }
+
+        /*
+         * 4. PAJAK / STNK
+         */
+        if ($request->filled('pajak_stnk')) {
+
+            if (
+                $request->input('pajak_stnk')
+                === 'pajak_expired'
+            ) {
+                $query->whereDate(
+                    'masa_berlaku_pajak',
+                    '<',
+                    now()
+                );
+            }
+
+            if (
+                $request->input('pajak_stnk')
+                === 'stnk_expired'
+            ) {
+                $query->whereDate(
+                    'masa_berlaku_stnk',
+                    '<',
+                    now()
+                );
+            }
+        }
+
+        /*
+         * 5. SUMBER KENDARAAN
+         *
+         * Parameter URL:
+         * ?sumber=APBD
+         *
+         * Kolom database:
+         * sumber_kendaraan
+         */
+        if ($request->filled('sumber')) {
+            $query->where(
+                'sumber_kendaraan',
+                $request->input('sumber')
+            );
+        }
+
+        /*
+         * 6. TAHUN PEMAKAIAN
+         */
+        if ($request->filled('tahun')) {
+            $query->where(
+                'tahun_pemakaian',
+                $request->input('tahun')
+            );
+        }
     }
 }

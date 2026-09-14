@@ -4,67 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Kendaraan</title>
+
     <style>
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: 'DejaVu Sans', Helvetica, Arial, sans-serif;
             font-size: 9px;
-            color: #1e293b;
+            color: #334155;
             padding: 15px;
+            background-color: #ffffff;
+            line-height: 1.3;
         }
 
+        /* =========================
+           HEADER
+        ========================= */
         .header {
+            background-color: #0f172a;
             text-align: center;
             margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #0d9488;
+            padding: 15px 10px;
+            border-radius: 8px;
         }
 
         .header h1 {
             font-size: 16px;
-            color: #0d9488;
-            margin-bottom: 4px;
+            color: #22d3ee;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
         }
 
         .header p {
-            font-size: 8px;
-            color: #64748b;
+            font-size: 9px;
+            color: #cbd5e1;
         }
 
+        /* =========================
+           META
+        ========================= */
         .meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #334155;
         }
 
-        .meta-info {
-            font-size: 8px;
-            color: #64748b;
+        .meta-left {
+            text-align: left;
         }
 
+        .meta-right {
+            text-align: right;
+        }
+
+        .meta-value {
+            color: #0f766e;
+            font-weight: bold;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8px;
+            font-size: 7.5px;
+            table-layout: fixed;
         }
 
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        /* Header utama */
         thead th {
-            background-color: #0d9488;
-            color: #ffffff;
-            padding: 5px 4px;
+            background-color: #22d3ee;
+            color: #0f172a;
+            padding: 5px 3px;
             text-align: center;
             font-weight: bold;
-            border: 1px solid #0d9488;
+            border: 1px solid #06b6d4;
+            text-transform: uppercase;
+            font-size: 7px;
+            vertical-align: middle;
         }
 
+        /* Header sub */
+        thead .sub-head {
+            background-color: #67e8f9;
+            font-size: 6.5px;
+            padding: 4px 2px;
+        }
+
+        /* Isi tabel */
         tbody tr:nth-child(even) {
-            background-color: #f0fdfa;
+            background-color: #f8fafc;
         }
 
         tbody tr:nth-child(odd) {
@@ -72,155 +126,335 @@
         }
 
         tbody td {
-            padding: 4px 3px;
-            border: 1px solid #e2e8f0;
-            vertical-align: middle;
+            padding: 5px 3px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+            word-wrap: break-word;
         }
 
         tbody td:first-child {
             text-align: center;
             font-weight: bold;
-            color: #64748b;
+            color: #475569;
         }
 
+        /* =========================
+           TEXT
+        ========================= */
+        .text-sub {
+            display: block;
+            color: #64748b;
+            font-size: 6.5px;
+            margin-top: 2px;
+        }
+
+        /* =========================
+           BADGE
+        ========================= */
         .badge {
             display: inline-block;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-size: 7px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 6.5px;
             font-weight: bold;
+            text-transform: uppercase;
         }
 
         .badge-red {
             background-color: #fee2e2;
-            color: #dc2626;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
         }
 
         .badge-teal {
             background-color: #ccfbf1;
-            color: #0d9488;
+            color: #0f766e;
+            border: 1px solid #5eead4;
         }
 
         .badge-cyan {
             background-color: #cffafe;
-            color: #0891b2;
+            color: #0369a1;
+            border: 1px solid #67e8f9;
         }
 
         .badge-zinc {
-            background-color: #f4f4f5;
-            color: #71717a;
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
         }
 
-        .footer {
+        /* =========================
+           FOOTER
+        ========================= */
+        .footer-wrapper {
             margin-top: 15px;
-            text-align: right;
-            font-size: 8px;
-            color: #94a3b8;
-        }
-
-        .summary {
-            margin-top: 10px;
+            display: table;
+            width: 100%;
             font-size: 8px;
             color: #64748b;
+        }
+
+        .footer-left {
+            display: table-cell;
+            text-align: left;
+        }
+
+        .footer-right {
+            display: table-cell;
             text-align: right;
         }
     </style>
 </head>
+
 <body>
+
+    <!-- =========================
+         HEADER
+    ========================= -->
     <div class="header">
-        <h1>DATA KENDARAAN</h1>
+        <h1>Data Kendaraan</h1>
         <p>Dicetak pada: {{ $printedAt }}</p>
     </div>
 
+    <!-- =========================
+         JUMLAH & KATEGORI
+    ========================= -->
     <div class="meta">
-        <div class="meta-info">
-            <strong>Total:</strong> {{ $vehicles->count() }} kendaraan
+
+        <div class="meta-left">
+            Jumlah Kendaraan:
+            <span class="meta-value">
+                {{ $vehicles->count() }}
+            </span>
         </div>
+
+        <div class="meta-right">
+            Kategori Kendaraan:
+            <span class="meta-value">
+                {{ $vehicles->pluck('kategori')->unique()->implode(', ') }}
+            </span>
+        </div>
+
     </div>
 
+    <!-- =========================
+         TABEL
+    ========================= -->
     <table>
+
         <thead>
+
+            <!-- HEADER UTAMA -->
             <tr>
-                <th style="width:3%">No</th>
-                <th style="width:6%">No Polisi</th>
-                <th style="width:8%">Merek / Tipe</th>
-                <th style="width:5%">Jenis</th>
-                <th style="width:6%">Kategori</th>
-                <th style="width:7%">Pemakai</th>
-                <th style="width:5%">Tahun</th>
-                <th style="width:5%">Pajak</th>
-                <th style="width:5%">STNK</th>
-                <th style="width:5%">Status</th>
-                <th style="width:7%">Sumber Kendaraan</th>
-                <th style="width:7%">No Chasis</th>
-                <th style="width:7%">No Mesin</th>
-                <th style="width:5%">Anggaran</th>
-                <th style="width:6%">Keterangan</th>
+                <th rowspan="2" style="width: 3%;">No</th>
+
+                <th rowspan="2" style="width: 5%;">
+                    Merek
+                </th>
+
+                <th rowspan="2" style="width: 5%;">
+                    Tipe
+                </th>
+
+                <th rowspan="2" style="width: 9%;">
+                    No Chasis
+                </th>
+
+                <th rowspan="2" style="width: 8%;">
+                    No Mesin
+                </th>
+
+                <th rowspan="2" style="width: 7%;">
+                    No Polisi
+                </th>
+
+                <th rowspan="2" style="width: 5%;">
+                    Tahun
+                </th>
+
+                <th rowspan="2" style="width: 7%;">
+                    Masa Berlaku<br>
+                    Pajak Tahunan
+                </th>
+
+                <th rowspan="2" style="width: 7%;">
+                    Masa Berlaku<br>
+                    STNK
+                </th>
+
+                <th rowspan="2" style="width: 6%;">
+                    Bahan Bakar
+                </th>
+
+                <!-- PEMAKAI -->
+                <th colspan="2" style="width: 12%;">
+                    Pemakai
+                </th>
+
+                <th rowspan="2" style="width: 7%;">
+                    Keterangan Kendaraan
+                </th>
+
+                <th rowspan="2" style="width: 7%;">
+                    Sumber
+                </th>
+
+                <th rowspan="2" style="width: 7%;">
+                    Anggaran
+                </th>
             </tr>
+
+            <!-- SUB HEADER PEMAKAI -->
+            <tr>
+                <th class="sub-head" style="width: 10%;">
+                    Nama
+                </th>
+
+                <th class="sub-head" style="width: 10%;">
+                    Jabatan
+                </th>
+            </tr>
+
         </thead>
+
         <tbody>
+
             @foreach ($vehicles as $index => $v)
+
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td style="font-weight:bold;">{{ $v->nomor_polisi }}</td>
+
+                    <!-- 1. NO -->
                     <td>
-                        <strong>{{ $v->merek }}</strong><br>
-                        <span style="color:#64748b">{{ $v->tipe }}</span>
+                        {{ $index + 1 }}
                     </td>
-                    <td>{{ $v->jenis }}</td>
-                    <td>{{ $v->kategori }}</td>
+
+                    <!-- 2. MEREK -->
                     <td>
-                        <strong>{{ $v->nama_pemakai }}</strong><br>
-                        <span style="color:#64748b">{{ $v->jabatan_pemakai }}</span>
+                        {{ $v->merek }}
                     </td>
-                    <td style="text-align:center;">{{ $v->tahun_pemakaian }}</td>
-                    <td style="text-align:center;">
+
+                    <!-- 3. TIPE -->
+                    <td>
+                        {{ $v->tipe }}
+                    </td>
+
+                    <!-- 4. NO CHASIS -->
+                    <td style="font-size: 6.5px; word-break: break-all;">
+                        {{ $v->nomor_chasis }}
+                    </td>
+
+                    <!-- 5. NO MESIN -->
+                    <td style="font-size: 6.5px; word-break: break-all;">
+                        {{ $v->nomor_mesin }}
+                    </td>
+
+                    <!-- 6. NO POLISI -->
+                    <td style="font-weight: bold; text-align: center;">
+                        {{ $v->nomor_polisi }}
+                    </td>
+
+                    <!-- 7. TAHUN -->
+                    <td style="text-align: center;">
+                        {{ $v->tahun_pemakaian }}
+                    </td>
+
+                    <!-- 8. PAJAK TAHUNAN -->
+                    <td style="text-align: center;">
+
                         @if ($v->isPajakExpired())
-                            <span class="badge badge-red">Belum Bayar</span>
+
+                            <span class="badge badge-red">
+                                Belum bayar
+                            </span>
+
                         @else
+
                             {{ $v->masa_berlaku_pajak->format('d/m/Y') }}
+
                         @endif
+
                     </td>
-                    <td style="text-align:center;">
+
+                    <!-- 9. STNK -->
+                    <td style="text-align: center;">
+
                         @if ($v->isStnkExpired())
-                            <span class="badge badge-red">Belum Bayar</span>
+
+                            <span class="badge badge-red">
+                                Belum bayar
+                            </span>
+
                         @else
+
                             {{ $v->masa_berlaku_stnk->format('d/m/Y') }}
+
                         @endif
+
                     </td>
-                    <td style="text-align:center;">
-                        @if ($v->status === 'aktif')
-                            <span class="badge badge-teal">Aktif</span>
-                        @elseif ($v->status === 'perbaikan')
-                            <span class="badge badge-cyan">Perbaikan</span>
-                        @elseif ($v->status === 'dijual')
-                            <span class="badge badge-red">Dijual</span>
-                        @else
-                            <span class="badge badge-zinc">Non Aktif</span>
-                        @endif
+
+                    <!-- 10. BAHAN BAKAR -->
+                    <td style="text-align: center;">
+                        {{ $v->bahan_bakar }}
                     </td>
-                    <td>{{ $v->sumber_kendaraan }}</td>
-                    <td style="font-size:7px;">{{ $v->nomor_chasis }}</td>
-                    <td style="font-size:7px;">{{ $v->nomor_mesin }}</td>
-                    <td style="text-align:right;">Rp {{ number_format($v->anggaran_biaya, 0, ',', '.') }}</td>
-                    <td style="font-size:7px;">
+
+                    <!-- 11A. PEMAKAI - NAMA -->
+                    <td>
+                        {{ $v->nama_pemakai }}
+                    </td>
+
+                    <!-- 11B. PEMAKAI - JABATAN -->
+                    <td>
+                        {{ $v->jabatan_pemakai }}
+                    </td>
+
+                    <!-- 12. JATUH TEMPO / KETERANGAN BAYAR -->
+                    <td style="font-size: 6.5px;">
+
                         @if ($v->keterangan_kendaraan)
-                            {{ Str::limit($v->keterangan_kendaraan, 30) }}
+
+                            {{ $v->keterangan_kendaraan }}
+
                         @else
+
                             -
+
                         @endif
+
                     </td>
+
+                    <!-- 13. SUMBER -->
+                    <td style="text-align: center;">
+                        {{ $v->sumber_kendaraan }}
+                    </td>
+
+                    <!-- 14. ANGGARAN -->
+                    <td style="text-align: right;">
+                        {{ number_format($v->anggaran_biaya, 0, ',', '.') }}
+                    </td>
+
                 </tr>
+
             @endforeach
+
         </tbody>
+
     </table>
 
-    <div class="summary">
-        Total {{ $vehicles->count() }} kendaraan
+    <!-- =========================
+         FOOTER
+    ========================= -->
+    <div class="footer-wrapper">
+
+        <div class="footer-left">
+            Total {{ $vehicles->count() }} Data
+        </div>
+
+        <div class="footer-right">
+            Generated by <strong>SIMPAKDA</strong>
+        </div>
+
     </div>
 
-    <div class="footer">
-        Generated by Sistem Informasi Kendaraan
-    </div>
 </body>
 </html>

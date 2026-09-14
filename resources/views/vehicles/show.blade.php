@@ -7,8 +7,8 @@
                 <flux:text class="mt-1 text-sky-100">Informasi lengkap kendaraan dan dokumen terkait.</flux:text>
             </div>
             <flux:button.group>
-                <flux:button :href="route('vehicles.index')" variant="primary" icon="arrow-left" >
-                    Kembali 
+                <flux:button :href="url()->previous()" variant="primary" icon="arrow-left" >
+                    Kembali
                 </flux:button>
                 <flux:button :href="route('vehicles.edit', $vehicle->id)" variant="primary" icon="pencil" hover-class="bg-sky-700/90" >
                     Edit
@@ -31,6 +31,8 @@
                         <dd class="font-medium">{{ $vehicle->tipe }}</dd>
                         <dt class="text-slate-500 dark:text-slate-400">Jenis</dt>
                         <dd class="font-medium">{{ $vehicle->jenis }}</dd>
+                        <dt class="text-slate-500 dark:text-slate-400">Bahan Bakar</dt>
+                        <dd class="font-medium">{{ $vehicle->bahan_bakar ?? '-' }}</dd>
                         <dt class="text-slate-500 dark:text-slate-400">Tahun</dt>
                         <dd class="font-medium">{{ $vehicle->tahun_pemakaian }}</dd>
                         <dt class="text-slate-500 dark:text-slate-400">No Chasis</dt>

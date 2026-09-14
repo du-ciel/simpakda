@@ -52,7 +52,7 @@ class CreateAdmin extends Command
         }
 
         // Buat user
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($password),

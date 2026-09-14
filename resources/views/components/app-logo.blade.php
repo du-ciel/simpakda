@@ -1,47 +1,64 @@
 @props([
     'sidebar' => false,
     'logoPath' => null,
-    'logoSize' => 'size-14',
-    'textSize' => 'text-lg',
+    'logoSize' => 'size-8', // Diperkecil agar pas untuk Sidebar/Navbar
+    'textSize' => 'text-xl', // Diperbesar sedikit agar seimbang dengan logo
     'logoClass' => '',
     'textClass' => '',
 ])
 
 @php
-    $brandName = config('app.name') === 'Laravel' ? 'Simpakda' : config('app.name', 'Simpakda');
+    $brandName = config('app.name') === 'Laravel'
+        ? 'Simpakda'
+        : config('app.name', 'Simpakda');
+
     $logoPath = $logoPath ?: asset('logo.svg');
 @endphp
 
-{{--
-    Ukuran dan gaya bisa diubah saat pemanggilan komponen:
-    <x-app-logo :logo-size="'size-14'" :text-size="'text-base' 'items-center'" />
-    Ganti public/logo.svg jika ingin memakai logo organisasi sendiri.
---}}
 @if($sidebar)
     <a
         {{ $attributes->merge(['href' => route('dashboard')])->class([
-            'group flex h-auto min-w-0 flex-col items-center justify-center gap-2 px-2 py-3 text-center',
-            'in-data-flux-sidebar-collapsed-desktop:h-10 in-data-flux-sidebar-collapsed-desktop:w-10 in-data-flux-sidebar-collapsed-desktop:px-0',
-            'in-data-flux-sidebar-collapsed-desktop:in-data-flux-sidebar-active:absolute in-data-flux-sidebar-collapsed-desktop:in-data-flux-sidebar-active:opacity-0',
+            'group flex items-center gap-3 px-3 py-4 transition-all',
+            'in-data-flux-sidebar-collapsed-desktop:justify-center',
+            'in-data-flux-sidebar-collapsed-desktop:px-0',
         ]) }}
         data-flux-sidebar-brand
     >
-        <span class="{{ $logoSize }} {{ $logoClass }} flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/15 p-1.5 ring-1 ring-white/20 transition group-hover:bg-white/25">
-            <img src="{{ $logoPath }}" alt="{{ $brandName }}" class="size-full object-contain" />
+        {{-- LOGO --}}
+        <span class="{{ $logoSize }} {{ $logoClass }} shrink-0 flex items-center justify-center">
+            <img
+                src="{{ $logoPath }}"
+                alt="{{ $brandName }}"
+                class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+            />
         </span>
-        <span class="{{ $textSize }} {{ $textClass }} min-w-0 max-w-full truncate font-semibold tracking-wide text-white in-data-flux-sidebar-collapsed-desktop:hidden">
+
+        {{-- NAMA --}}
+        <span class="{{ $textSize }} {{ $textClass }} truncate font-bold tracking-tight text-white in-data-flux-sidebar-collapsed-desktop:hidden">
             {{ $brandName }}
         </span>
     </a>
+
 @else
+
     <a
-        {{ $attributes->merge(['href' => route('dashboard')])->class(['group flex flex-col items-center justify-center gap-1.5 text-center']) }}
+        {{ $attributes->merge(['href' => route('dashboard')])->class([
+            'group flex items-center gap-3 transition-all',
+        ]) }}
     >
-        <span class="{{ $logoSize }} {{ $logoClass }} flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-cyan-600 p-1.5 shadow-sm transition group-hover:bg-cyan-700">
-            <img src="{{ $logoPath }}" alt="{{ $brandName }}" class="size-full object-contain" />
+        {{-- LOGO --}}
+        <span class="{{ $logoSize }} {{ $logoClass }} shrink-0 flex items-center justify-center">
+            <img
+                src="{{ $logoPath }}"
+                alt="{{ $brandName }}"
+                class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+            />
         </span>
-        <span class="{{ $textSize }} {{ $textClass }} font-semibold tracking-wide text-slate-800 dark:text-white">
+
+        {{-- NAMA --}}
+        <span class="{{ $textSize }} {{ $textClass }} font-bold tracking-tight text-slate-900 dark:text-white">
             {{ $brandName }}
         </span>
     </a>
+
 @endif
