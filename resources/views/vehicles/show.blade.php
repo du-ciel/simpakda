@@ -91,14 +91,14 @@
                     <dl class="grid grid-cols-2 gap-4 text-sm">
                         <dt class="text-slate-500 dark:text-slate-400">Pajak</dt>
                         <dd class="font-medium">
-                            {{ $vehicle->masa_berlaku_pajak->format('d/m/Y') }}
+                            {{ $vehicle->masa_berlaku_pajak?->format('d/m/Y') ?? '-' }}
                             @if ($vehicle->isPajakExpired())
                                 <flux:badge color="red" class="ml-2">Belum Bayar</flux:badge>
                             @endif
                         </dd>
                         <dt class="text-slate-500 dark:text-slate-400">STNK</dt>
                         <dd class="font-medium">
-                            {{ $vehicle->masa_berlaku_stnk->format('d/m/Y') }}
+                            {{ $vehicle->masa_berlaku_stnk?->format('d/m/Y') ?? '-' }}
                             @if ($vehicle->isStnkExpired())
                                 <flux:badge color="red" class="ml-2">Belum Bayar</flux:badge>
                             @endif

@@ -115,17 +115,17 @@ class Vehicle extends Model
 
     public function isPajakExpired(): bool
     {
-        return $this->masa_berlaku_pajak->isBefore(today());
+        return $this->masa_berlaku_pajak?->isBefore(today()) ?? false;
     }
 
     public function isStnkExpired(): bool
     {
-        return $this->masa_berlaku_stnk->isBefore(today());
+        return $this->masa_berlaku_stnk?->isBefore(today()) ?? false;
     }
 
     public function isPajakExpiringSoon(int $days = 21): bool
     {
-        return $this->masa_berlaku_pajak->betweenIncluded(today(), today()->addDays($days));
+        return $this->masa_berlaku_pajak?->betweenIncluded(today(), today()->addDays($days)) ?? false;
     }
     /** * Data penyusutan kendaraan. */
     public function depreciation(): HasOne 

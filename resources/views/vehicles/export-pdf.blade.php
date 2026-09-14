@@ -362,7 +362,11 @@
                     <!-- 8. PAJAK TAHUNAN -->
                     <td style="text-align: center;">
 
-                        @if ($v->isPajakExpired())
+                        @if (! $v->masa_berlaku_pajak)
+
+                            -
+
+                        @elseif ($v->isPajakExpired())
 
                             <span class="badge badge-red">
                                 Belum bayar
@@ -379,7 +383,11 @@
                     <!-- 9. STNK -->
                     <td style="text-align: center;">
 
-                        @if ($v->isStnkExpired())
+                        @if (! $v->masa_berlaku_stnk)
+
+                            -
+
+                        @elseif ($v->isStnkExpired())
 
                             <span class="badge badge-red">
                                 Belum bayar

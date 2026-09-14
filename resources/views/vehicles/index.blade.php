@@ -507,7 +507,11 @@
                                 ================================================== --}}
                                 <td class="px-5 py-4">
 
-                                    @if ($vehicle->isPajakExpired())
+                                    @if (! $vehicle->masa_berlaku_pajak)
+
+                                        <span class="text-xs text-slate-400">-</span>
+
+                                    @elseif ($vehicle->isPajakExpired())
 
                                         <flux:badge
                                             color="red"
@@ -541,7 +545,11 @@
                                 ================================================== --}}
                                 <td class="px-5 py-4">
 
-                                    @if ($vehicle->isStnkExpired())
+                                    @if (! $vehicle->masa_berlaku_stnk)
+
+                                        <span class="text-xs text-slate-400">-</span>
+
+                                    @elseif ($vehicle->isStnkExpired())
 
                                         <flux:badge
                                             color="red"
