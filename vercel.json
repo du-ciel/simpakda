@@ -40,6 +40,7 @@
     "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
     "CACHE_STORE": "database",
     "SESSION_DRIVER": "database",
+    "DB_CONNECTION": "mysql",
     "LOG_CHANNEL": "stderr"
   }
 }
